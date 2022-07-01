@@ -1,4 +1,3 @@
-
 const addNewTodoButton = document.getElementById("add-new-todo");
 const createTodoButton = document.getElementById("create-todo");
 const updateTodoButton = document.getElementById("update-todo");
@@ -12,47 +11,70 @@ updateTodoButton.style.display = "none"
 
 let Todos = [];
 
+// REST api
+
 const displayAllTodos = () => {
 	todoList.innerHTML = ""
+	axios
+	.get("http://localhost:8000/posts")
+	.then(res => {	
+		Todos = [...res.data]
+		if (Todos.length == 0) {
 
-	if (Todos.length == 0) {
-
-		todoList.innerHTML += `
-		<div class = "empty-todo">
-		<img src="undraw_empty_xct9.png" alt="empty image" style="width: 50%;">
-		<br>
-		<span style="font-family: 'Fira Sans', sans-serif; font-size: 20px; font-weight: bold;">There are no todos yet...</span>
-		<br>
-		</div>
-		`;
-	} else {		
-		for(let key in Todos){
-			let todo = Todos[key];
 			todoList.innerHTML += `
-			<div data-id="${todo.id}" class="todo-content-item">
-				<span class="todo-id">▪️ ${todo.id} ▪️</span>
-				${todo.status === "Complete" ? `<span style="text-decoration: line-through;" class="todo-text">${todo.body}</span>` : `<span class="todo-text">${todo.body}</span>`}
-				<span class="todo-date">Created at : ${todo.timestamp}</span>
-				${todo.status === "Complete" ? `<span class="todo-status complete">▪️ ${todo.status} ▪️</span>` : `<span class="todo-status incomplete">▪️ ${todo.status} ▪️</span>`}
-				<div style="display: flex; flex-direction: column; justify-content: space-around; align-items: center;" class="actions-window">
-					<i class="far fa-edit"></i>
-					<i class="far fa-trash-alt"></i>
-					${todo.status === "Complete" ? "" : '<i class="fas fa-check"></i>'}
-				</div>
+			<div class = "empty-todo">
+			<img src="./assets/images/undraw_empty_xct9.png" alt="empty image" style="width: 50%;">
+			<br>
+			<span style="font-family: 'Fira Sans', sans-serif; font-size: 20px; font-weight: bold;">There are no todos yet...</span>
+			<br>
 			</div>
 			`;
-		};
-	}
+		} else {		
+			for(let key in Todos){
+				let todo = Todos[key];
+				todoList.innerHTML += `
+				<div data-id="${todo.id}" class="todo-content-item">
+					<span class="todo-id">▪️ ${todo.id} ▪️</span>
+					${todo.status === "Complete" ? `<span style="text-decoration: line-through;" class="todo-text">${todo.body}</span>` : `<span class="todo-text">${todo.body}</span>`}
+					<span class="todo-date">Created at : ${todo.timestamp}</span>
+					${todo.status === "Complete" ? `<span class="todo-status complete">▪️ ${todo.status} ▪️</span>` : `<span class="todo-status incomplete">▪️ ${todo.status} ▪️</span>`}
+					<div style="display: flex; flex-direction: column; justify-content: space-around; align-items: center;" class="actions-window">
+						<i class="far fa-edit"></i>
+						<i class="far fa-trash-alt"></i>
+						${todo.status === "Complete" ? "" : '<i class="fas fa-check"></i>'}
+					</div>
+				</div>
+				`;
+			};
+		}
+	}).catch(err => console.log(err));
+
+	console.log(Todos);
 }
 
 displayAllTodos();
+
+// const addTodo = () => {
+// 	const id = idField.value;
+// 	const timestamp = timeField.value;
+// 	const body = bodyField.value;
+// 	const status = "Not complete";
+// 	Todos.push({id,timestamp, body, status})
+// 	idField.value = "";
+// 	timeField.value = "";
+// 	bodyField.value = "";
+// 	displayAllTodos();
+// }
 
 const addTodo = () => {
 	const id = idField.value;
 	const timestamp = timeField.value;
 	const body = bodyField.value;
 	const status = "Not complete";
-	Todos.push({id,timestamp, body, status})
+	axios
+    .post('http://localhost:8000/posts', {id,timestamp, body, status})
+    .then(res => console.log(res.data))
+    .catch(err => console.error(err));
 	idField.value = "";
 	timeField.value = "";
 	bodyField.value = "";
@@ -70,7 +92,7 @@ const editTodo = (itemId) => {
 }
 
 const generateID = () => {
-	let id = `${Math.random().toString(36).substring(2, 6)}-${Math.random().toString(36).substring(2, 4)}-${Math.random().toString(36).substr(2, 4)}-${Math.random().toString(36).substr(2, 6)}`;
+	let id = `${Math.random().toString(36).substr(2, 6)}-${Math.random().toString(36).substr(2, 4)}-${Math.random().toString(36).substr(2, 4)}-${Math.random().toString(36).substr(2, 6)}`;
 	return id;
 }
 
@@ -87,6 +109,10 @@ const addNewTodo = () => {
 
 const deleteTodo = (itemId) => {
 	Todos = Todos.filter(todo => todo.id != itemId);
+	axios
+	.delete(`http://localhost:8000/posts/${itemId}`)
+	.then((res) => res.data)
+	.catch((error) => console.log(error))
 	displayAllTodos();
 }
 
@@ -143,3 +169,4 @@ todoList.addEventListener('click', (e)=>{
 addNewTodoButton.addEventListener('click', addNewTodo);
 createTodoButton.addEventListener('click', addTodo);
 updateTodoButton.addEventListener('click', updateTodo);
+
